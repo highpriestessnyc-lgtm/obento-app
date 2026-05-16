@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>今日のお弁当なーに？</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#FFFDF7;--sur:#FFF;--dark:#2C2416;--muted:#9A8C78;--bdr:rgba(44,36,22,0.1);
+  --green:#4A7C3F;--gl:#E8F5E4;--gd:#3A6030;
+  --orange:#D4691E;--ol:#FFF0E4;--od:#A84E10;
+  --yellow:#C49A20;--yl:#FFF8DC;
+  --pink:#C45A70;--pl:#FFE8EE;
+  --blue:#4A6FA0;--bl:#E4EEF8;
+  --cream:#F5EFE2;--r:14px;
+}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--dark);font-size:14px;min-height:100vh;}
+
+/* HEADER */
+.hdr{background:linear-gradient(135deg,#4A7C3F,#6A9A5A);padding:env(safe-area-inset-top,12px) 16px 0;position:sticky;top:0;z-index:100;}
+.hdr-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.hdr-ico{width:38px;height:38px;background:rgba(255,255,255,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.hdr h1{font-family:'Zen Maru Gothic',sans-serif;color:#fff;font-size:18px;font-weight:700;line-height:1.2;}
+.hdr p{color:rgba(255,255,255,0.8);font-size:11px;margin-top:1px;}
+.badge-offline{background:rgba(255,255,255,0.2);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:auto;flex-shrink:0;}
+
+/* PERSON SELECTOR */
+.person-bar{background:rgba(0,0,0,0.15);border-radius:0;display:flex;padding:8px 12px;gap:6px;}
+.person-btn{flex:1;padding:8px 4px;border:none;border-radius:10px;background:transparent;color:rgba(255,255,255,0.75);font-family:'Zen Maru Gothic',sans-serif;font-size:12px;font-weight:500;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;touch-action:manipulation;transition:all .2s;}
+.person-btn .pi{font-size:20px;}
+.person-btn.on{background:rgba(255,255,255,0.95);color:var(--green);font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,0.15);}
+
+/* NAV TABS */
+.tab-bar{display:flex;background:var(--sur);border-bottom:1px solid var(--bdr);}
+.tb{flex:1;padding:9px 4px 7px;border:none;background:none;cursor:pointer;border-bottom:2.5px solid transparent;font-family:'Noto Sans JP',sans-serif;font-size:11px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;touch-action:manipulation;transition:all .15s;}
+.tb .ti{font-size:17px;}
+.tb.on{color:var(--green);border-bottom-color:var(--green);font-weight:700;}
+
+/* INGREDIENT TAB */
+.note-bar{background:var(--gl);padding:7px 14px;font-size:11px;color:var(--gd);display:flex;align-items:center;gap:6px;border-bottom:1px solid rgba(74,124,63,0.15);}
+.fridge-top{padding:10px 14px 6px;display:flex;justify-content:space-between;align-items:center;}
+.fridge-top h2{font-family:'Zen Maru Gothic',sans-serif;font-size:16px;font-weight:700;color:var(--dark);}
+.reset-btn{font-size:11px;color:var(--pink);border:1px solid rgba(196,90,112,0.25);background:none;padding:4px 10px;border-radius:20px;cursor:pointer;touch-action:manipulation;}
+.cat-tabs{display:flex;overflow-x:auto;padding:0 14px;scrollbar-width:none;border-bottom:1px solid var(--bdr);}
+.cat-tabs::-webkit-scrollbar{display:none;}
+.ct{flex-shrink:0;padding:7px 12px 5px;font-size:12px;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;font-family:'Noto Sans JP',sans-serif;touch-action:manipulation;}
+.ct.on{color:var(--dark);border-bottom-color:var(--dark);font-weight:700;}
+.ing-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;padding:12px 14px 140px;}
+.ic{background:var(--sur);border:1.5px solid var(--bdr);border-radius:12px;padding:9px 4px 7px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;position:relative;user-select:none;min-height:82px;justify-content:center;transition:all .12s;touch-action:manipulation;}
+.ic:active{transform:scale(0.92);}
+.ic.on{background:var(--gl);border-color:var(--green);}
+.ie{font-size:24px;line-height:1;}
+.in{font-size:10px;text-align:center;line-height:1.3;font-weight:500;}
+.ichk{position:absolute;top:4px;right:4px;width:14px;height:14px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:8px;font-weight:900;}
+.qc{display:flex;align-items:center;gap:3px;margin-top:3px;}
+.qb{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--green);background:#fff;color:var(--green);font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;touch-action:manipulation;}
+.qb:active{background:var(--green);color:#fff;}
+.qn{font-size:11px;font-weight:700;color:var(--green);min-width:20px;text-align:center;}
+
+/* GEN AREA */
+.gen-area{position:sticky;bottom:0;background:var(--bg);border-top:1px solid var(--bdr);padding:12px 14px;padding-bottom:max(12px,env(safe-area-inset-bottom));}
+.gen-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--green),#5A9A4A);color:#fff;border:none;border-radius:14px;font-family:'Zen Maru Gothic',sans-serif;font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;touch-action:manipulation;transition:all .15s;box-shadow:0 4px 14px rgba(74,124,63,0.3);}
+.gen-btn:active{transform:scale(0.97);}
+.gen-btn:disabled{background:#C0BAB0;box-shadow:none;cursor:not-allowed;}
+.gen-hint{text-align:center;font-size:11px;color:var(--muted);margin-top:5px;}
+
+/* BENTO TAB */
+.bento-wrap{padding:12px 14px 120px;}
+.sel-sum{background:var(--sur);border:1px solid var(--bdr);border-radius:12px;padding:10px 12px;margin-bottom:10px;}
+.sel-ttl{font-size:10px;color:var(--muted);margin-bottom:5px;font-weight:700;letter-spacing:1px;}
+.schips{display:flex;flex-wrap:wrap;gap:4px;}
+.sc{background:var(--gl);color:var(--gd);font-size:10px;padding:3px 8px;border-radius:20px;font-weight:500;}
+
+/* RESULT */
+.res-ttl{font-family:'Zen Maru Gothic',sans-serif;font-size:18px;font-weight:700;color:var(--dark);margin-bottom:12px;margin-top:14px;display:flex;align-items:center;gap:8px;}
+.bento-box{background:var(--sur);border:2px solid var(--green);border-radius:16px;overflow:hidden;margin-bottom:12px;}
+.bento-box-hdr{background:var(--green);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;}
+.bento-box-ttl{font-family:'Zen Maru Gothic',sans-serif;font-size:15px;font-weight:700;color:#fff;}
+.bento-cal{font-size:12px;color:rgba(255,255,255,0.85);background:rgba(0,0,0,0.15);padding:3px 10px;border-radius:20px;}
+.bento-sections{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+.bento-section{padding:10px 12px;border-bottom:1px solid var(--bdr);}
+.bento-section:last-child{border-bottom:none;}
+.bento-section.full{grid-column:1/-1;}
+.bs-type{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;margin-bottom:4px;display:flex;align-items:center;gap:4px;}
+.bs-name{font-size:13px;font-weight:700;color:var(--dark);margin-bottom:3px;}
+.bs-desc{font-size:11px;color:#555;line-height:1.5;}
+.bs-type-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;color:#fff;white-space:nowrap;}
+.tb-main{background:var(--orange);}
+.tb-sub{background:var(--green);}
+.tb-rice{background:var(--yellow);}
+.recipe-toggle{background:none;border:1px solid var(--bdr);color:var(--muted);border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:'Noto Sans JP',sans-serif;margin-top:6px;touch-action:manipulation;}
+.rsteps{display:none;margin-top:6px;padding-top:6px;border-top:1px solid var(--bdr);}
+.rsteps.open{display:block;}
+.step{display:flex;gap:6px;margin-bottom:5px;align-items:flex-start;}
+.snum{width:16px;height:16px;border-radius:50%;background:var(--green);color:#fff;font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.stxt{font-size:11px;line-height:1.5;color:#333;}
+.fav-btn{font-size:18px;border:none;background:none;cursor:pointer;padding:2px;touch-action:manipulation;line-height:1;}
+
+/* 彩りチェック */
+.color-check{background:var(--sur);border:1px solid var(--bdr);border-radius:14px;padding:12px 14px;margin-bottom:10px;}
+.cc-ttl{font-family:'Zen Maru Gothic',sans-serif;font-size:14px;font-weight:700;color:var(--dark);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.cc-bars{display:flex;gap:6px;align-items:flex-end;margin-bottom:10px;}
+.cc-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.cc-circle{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;border:2.5px solid transparent;transition:all .3s;}
+.cc-circle.ok{border-color:var(--green);box-shadow:0 0 0 3px rgba(74,124,63,0.15);}
+.cc-circle.ng{opacity:0.35;filter:grayscale(0.6);}
+.cc-label{font-size:9px;color:var(--muted);font-weight:700;}
+.cc-ok-msg{font-size:12px;color:var(--green);font-weight:700;text-align:center;padding:6px;background:var(--gl);border-radius:8px;}
+.cc-ng-msg{font-size:12px;color:var(--orange);font-weight:700;text-align:center;padding:6px;background:var(--ol);border-radius:8px;}
+
+/* 詰め方ヒント */
+.tip-card{background:var(--yl, #FFF8DC);border:1px solid rgba(196,154,32,0.25);border-radius:12px;padding:11px 13px;margin-bottom:10px;}
+.tip-ttl{font-size:12px;font-weight:700;color:var(--yellow);margin-bottom:4px;display:flex;align-items:center;gap:5px;}
+.tip-txt{font-size:12px;color:var(--dark);line-height:1.7;}
+
+/* LEFTOVER MODE */
+.leftover-bar{background:var(--ol);border-bottom:1px solid rgba(212,105,30,0.2);padding:8px 14px;display:flex;align-items:center;justify-content:space-between;}
+.lo-lbl{font-size:12px;color:var(--od);font-weight:700;display:flex;align-items:center;gap:5px;}
+.lo-toggle{background:var(--orange);color:#fff;border:none;border-radius:20px;padding:5px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Noto Sans JP',sans-serif;touch-action:manipulation;}
+.lo-toggle.off{background:var(--sur);color:var(--muted);border:1px solid var(--bdr);}
+
+/* RETRY */
+.retry-btn{width:100%;padding:12px;background:transparent;border:2px solid var(--green);border-radius:12px;color:var(--green);font-family:'Zen Maru Gothic',sans-serif;font-size:16px;font-weight:700;cursor:pointer;margin-top:8px;touch-action:manipulation;}
+.deduct-btn{width:100%;margin-top:8px;padding:10px;background:var(--pl);border:1px solid rgba(196,90,112,0.2);border-radius:12px;color:var(--pink);font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans JP',sans-serif;touch-action:manipulation;}
+
+/* FAVS */
+.fwrap{padding:12px 14px 100px;}
+.fttl{font-family:'Zen Maru Gothic',sans-serif;font-size:17px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.fcard{background:var(--sur);border:1px solid var(--bdr);border-radius:12px;padding:11px 12px;margin-bottom:8px;display:flex;align-items:flex-start;gap:8px;}
+.fi{flex:1;min-width:0;}
+.fn{font-size:13px;font-weight:700;color:var(--dark);}
+.fsub{font-size:10px;color:var(--muted);margin-top:2px;}
+.fdsc{font-size:11px;color:#555;margin-top:4px;line-height:1.5;}
+.xbtn{font-size:16px;border:none;background:none;cursor:pointer;color:var(--muted);padding:2px;flex-shrink:0;}
+.empty{text-align:center;padding:36px 16px;color:var(--muted);}
+.ei{font-size:40px;margin-bottom:10px;}
+.empty p{font-size:12px;line-height:1.7;}
+.divider{height:1px;background:var(--bdr);margin:16px 0;}
+.nomatch{background:var(--sur);border:1px solid var(--bdr);border-radius:12px;padding:20px;text-align:center;color:var(--muted);margin-bottom:10px;font-size:13px;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-top">
+    <div class="hdr-ico">🍱</div>
+    <div>
+      <h1>今日のお弁当なーに？</h1>
+      <p>冷蔵庫の食材でお弁当を提案</p>
+    </div>
+    <span class="badge-offline">📴 オフライン</span>
+  </div>
+  <!-- PERSON SELECTOR -->
+  <div class="person-bar">
+    <button class="person-btn on" id="pb-y" onclick="setPerson('y')"><span class="pi">👶</span>幼稚園</button>
+    <button class="person-btn" id="pb-e" onclick="setPerson('e')"><span class="pi">🎒</span>小学校</button>
+    <button class="person-btn" id="pb-a" onclick="setPerson('a')"><span class="pi">👔</span>大人</button>
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <button class="tb on" id="tb-ing" onclick="showTab('ing')"><span class="ti">🥬</span>食材</button>
+  <button class="tb" id="tb-bento" onclick="showTab('bento')"><span class="ti">🍱</span>お弁当</button>
+  <button class="tb" id="tb-favs" onclick="showTab('favs')"><span class="ti">❤️</span>お気に入り</button>
+</div>
+
+<!-- INGREDIENT TAB -->
+<div id="tab-ing">
+  <div class="note-bar">🧂 調味料は全部ある前提｜📴 完全オフライン・無料</div>
+  <div class="leftover-bar">
+    <span class="lo-lbl">♻️ 残り物アレンジモード</span>
+    <button class="lo-toggle off" id="loBtn" onclick="toggleLeftover()">OFF</button>
+  </div>
+  <div class="fridge-top">
+    <h2>冷蔵庫の中身</h2>
+    <button class="reset-btn" onclick="resetFridge()">🗑 リセット</button>
+  </div>
+  <div class="cat-tabs" id="catTabs"></div>
+  <div class="ing-grid" id="ingGrid"></div>
+  <div class="gen-area">
+    <button class="gen-btn" id="genBtn" onclick="generate()" disabled>🍱 お弁当を考える！</button>
+    <p class="gen-hint" id="genHint">食材を1つ以上選んでください</p>
+  </div>
+</div>
+
+<!-- BENTO TAB -->
+<div id="tab-bento" style="display:none">
+  <div class="bento-wrap">
+    <div class="sel-sum">
+      <div class="sel-ttl">選んだ食材</div>
+      <div class="schips" id="selChips"><span style="font-size:11px;color:var(--muted)">食材タブで選んでください</span></div>
+    </div>
+    <button class="gen-btn" id="genBtn2" onclick="generate()" disabled style="margin-bottom:8px">🍱 お弁当を考える！</button>
+    <div id="resultArea"></div>
+  </div>
+</div>
+
+<!-- FAVS TAB -->
+<div id="tab-favs" style="display:none">
+  <div class="fwrap" id="favsWrap"></div>
+</div>
+
+<script>
+// ════════════════════════════════
+// 食材データ
+// ════════════════════════════════
+const CATS=[
+  {id:'veg',name:'🥬 野菜・卵',items:[
+    {id:'tamago',e:'🥚',n:'卵',col:'yellow'},
+    {id:'ninjin',e:'🥕',n:'にんじん',col:'red'},
+    {id:'brocco',e:'🥦',n:'ブロッコリー',col:'green'},
+    {id:'horenso',e:'🌱',n:'ほうれん草',col:'green'},
+    {id:'tomato',e:'🍅',n:'トマト',col:'red'},
+    {id:'edamame',e:'🫛',n:'枝豆',col:'green'},
+    {id:'corn',e:'🌽',n:'とうもろこし',col:'yellow'},
+    {id:'paprika',e:'🫑',n:'パプリカ',col:'red'},
+    {id:'kyuri',e:'🥒',n:'きゅうり',col:'green'},
+    {id:'tamanegi',e:'🧅',n:'玉ねぎ',col:'white'},
+    {id:'jagaimo',e:'🥔',n:'じゃがいも',col:'yellow'},
+    {id:'nori',e:'🌿',n:'のり',col:'black'},
+    {id:'gobo',e:'🪵',n:'ごぼう',col:'black'},
+    {id:'kinoko',e:'🍄',n:'きのこ',col:'black'},
+    {id:'kayaku',e:'🌾',n:'かぼちゃ',col:'yellow'},
+  ]},
+  {id:'meat',name:'🥩 肉・魚',items:[
+    {id:'chicken',e:'🍗',n:'鶏肉',col:'white'},
+    {id:'pork',e:'🥩',n:'豚肉',col:'white'},
+    {id:'beef',e:'🥩',n:'牛肉',col:'red'},
+    {id:'salmon',e:'🐟',n:'さけ',col:'red'},
+    {id:'sausage',e:'🌭',n:'ソーセージ',col:'red'},
+    {id:'bacon',e:'🥓',n:'ベーコン',col:'red'},
+    {id:'ham',e:'🍖',n:'ハム',col:'red'},
+    {id:'shrimp',e:'🦐',n:'えび',col:'red'},
+    {id:'tuna',e:'🥫',n:'ツナ缶',col:'white'},
+    {id:'saba',e:'🐠',n:'さば缶',col:'white'},
+    {id:'chikuwa',e:'🍢',n:'ちくわ',col:'white'},
+    {id:'wiener',e:'🌭',n:'ウインナー',col:'red'},
+  ]},
+  {id:'dairy',name:'🥛 乳・豆',items:[
+    {id:'cheese',e:'🧀',n:'チーズ',col:'yellow'},
+    {id:'tofu',e:'🫙',n:'豆腐',col:'white'},
+    {id:'milk',e:'🥛',n:'牛乳',col:'white'},
+    {id:'butter',e:'🧈',n:'バター',col:'yellow'},
+  ]},
+  {id:'grain',name:'🍚 主食',items:[
+    {id:'rice',e:'🍚',n:'ごはん',col:'white'},
+    {id:'bread',e:'🍞',n:'パン',col:'white'},
+    {id:'pasta',e:'🍝',n:'パスタ',col:'yellow'},
+  ]},
+];
+const ALL_ITEMS=CATS.flatMap(c=>c.items);
+
+// ════════════════════════════════
+// お弁当レシピDB
+// type: 'm'=メイン 's'=サブ 'r'=ごはん
+// person: ['y','e','a'] y=幼稚園 e=小学 a=大人
+// col: 彩り色
+// lo: 残り物アレンジ可能
+// ════════════════════════════════
+const MAIN=[
+  {id:'karaage',n:'鶏の唐揚げ',d:'冷めても美味しい定番おかず。お弁当の王様！',r:['chicken'],o:[],p:['y','e','a'],col:'white',cal:220,steps:['鶏肉に醤油・みりん・にんにくで下味をつける','片栗粉をまぶして170℃で揚げる','しっかり油を切って冷ます'],tip:'完全に冷ましてから詰めると◎'},
+  {id:'tamagoyaki',n:'甘い卵焼き',d:'ふわふわで甘めの定番卵焼き。幼稚園でも大人気！',r:['tamago'],o:[],p:['y','e','a'],col:'yellow',cal:120,steps:['卵3個を割りほぐし砂糖・醤油を加える','卵焼き器で3回に分けて巻く','巻きすで形を整えて冷ます'],tip:'しっかり冷ましてから切ると崩れない'},
+  {id:'hambagu',n:'ミニハンバーグ',d:'小さめに作ると弁当箱に入れやすい。冷めても美味。',r:['beef'],o:['tamanegi'],p:['y','e','a'],col:'black',cal:180,steps:['ひき肉・玉ねぎ・卵・パン粉を混ぜる','小さく成形してフライパンで焼く','中まで火を通して冷ます'],tip:'中まで完全に火を通すこと'},
+  {id:'takosan',n:'タコさんウインナー',d:'子どもが大喜び！かわいいタコ型ウインナー。',r:['wiener'],o:[],p:['y','e'],col:'red',cal:80,steps:['ウインナーの下半分に8本切り込みを入れる','フライパンで炒めると足が開く','塩こしょうで味を整える'],tip:'切り込みを深くすると足がよく広がる'},
+  {id:'salmon-yaki',n:'鮭の塩焼き',d:'冷めても美味しい魚のおかず。フレークにしても◎',r:['salmon'],o:[],p:['y','e','a'],col:'red',cal:160,steps:['鮭に塩をふり10分おく','水気を拭き取る','グリルで両面焼く'],tip:'しっかり焼いて水分を飛ばすと傷みにくい'},
+  {id:'pork-shoga',n:'豚の生姜焼き',d:'甘辛タレが食欲をそそる。大人弁当の定番。',r:['pork'],o:[],p:['e','a'],col:'white',cal:210,steps:['豚肉に醤油・みりん・しょうがで下味','フライパンで炒める','タレを絡めて炒め合わせる'],tip:'冷めてもタレの味がしみて美味しい'},
+  {id:'tori-soboro',n:'鶏そぼろ',d:'ごはんとの相性抜群。甘辛そぼろでお弁当映え。',r:['chicken'],o:[],p:['y','e','a'],col:'white',cal:140,steps:['鶏ひき肉を醤油・みりん・砂糖で炒り煮','水分がなくなるまで炒める','冷ましてごはんにのせる'],tip:'ごはんにのせて二色丼にすると彩りUP'},
+  {id:'ebi-mayo',n:'えびマヨ',d:'プリプリえびにマヨソースが絡む人気おかず。',r:['shrimp'],o:[],p:['e','a'],col:'red',cal:170,steps:['えびを下処理して片栗粉をまぶす','油で揚げる','マヨ・ケチャップ・砂糖でソースと和える'],tip:'ソースを絡める前にしっかり冷ます'},
+  {id:'cheese-chicken',n:'チキンのチーズ焼き',d:'チーズがとろっと溶けた食べ応えのある一品。',r:['chicken','cheese'],o:[],p:['e','a'],col:'yellow',cal:200,steps:['鶏肉を塩こしょうで焼く','チーズをのせてフタをして溶かす','完全に冷ましてから詰める'],tip:'チーズは完全に冷ましてから詰めること'},
+  {id:'saba-miso',n:'さば缶の味噌炒め',d:'さば缶で手軽に作れる本格おかず。大人弁当に◎',r:['saba'],o:[],p:['a'],col:'black',cal:190,steps:['さば缶を汁ごとフライパンへ','みそ・みりん・砂糖を加える','汁気がなくなるまで炒める'],tip:'しっかり水分を飛ばすと傷みにくい'},
+  {id:'chikuwa-ten',n:'ちくわの磯辺揚げ',d:'サクサク衣が美味しい。子どもに人気のおかず。',r:['chikuwa'],o:[],p:['y','e'],col:'black',cal:100,steps:['小麦粉・水・青のりを混ぜる','ちくわを切って衣をつける','170℃の油で揚げる'],tip:'小さめに切ると食べやすい'},
+  {id:'tuna-mayo',n:'ツナマヨ炒め',d:'ツナとマヨのシンプルおかず。何にでも合う万能系。',r:['tuna'],o:['corn'],p:['y','e','a'],col:'yellow',cal:130,steps:['ツナ缶の汁を切る','コーンと合わせてフライパンで炒める','マヨネーズで和える'],tip:'水分をしっかり飛ばすこと'},
+];
+
+const SIDES=[
+  {id:'brocco-goma',n:'ブロッコリーのごま和え',d:'緑の彩りに！栄養たっぷりの定番副菜。',r:['brocco'],o:[],p:['y','e','a'],col:'green',cal:40,steps:['ブロッコリーを小房に分け茹でる','水気をよく切る','醤油・砂糖・ごまで和える'],tip:'水気が出ないようしっかり絞ること'},
+  {id:'edamame-side',n:'枝豆',d:'緑の彩りと塩気がお弁当を引き締める。',r:['edamame'],o:[],p:['y','e','a'],col:'green',cal:50,steps:['枝豆を塩茹でする','しっかり冷ます','さやから出して詰める'],tip:'さやから出すと小さい子でも食べやすい'},
+  {id:'ninjin-glace',n:'にんじんのグラッセ',d:'甘くてほっこり。赤い彩りをプラス。',r:['ninjin'],o:[],p:['y','e','a'],col:'red',cal:50,steps:['にんじんを型抜きまたは乱切り','バター・砂糖・塩で甘辛く煮る','汁気がなくなるまで煮詰める'],tip:'型抜きすると幼稚園弁当に映える'},
+  {id:'mini-tomato',n:'プチトマト',d:'詰めるだけで赤い彩りが完成！簡単副菜。',r:['tomato'],o:[],p:['y','e','a'],col:'red',cal:15,steps:['プチトマトのへたを取る','水で洗って水気を拭く','そのまま詰めるだけ'],tip:'水気をしっかり拭いて傷みを防ぐ'},
+  {id:'corn-saute',n:'コーン炒め',d:'黄色の彩りに！甘くて子どもも大好き。',r:['corn'],o:[],p:['y','e'],col:'yellow',cal:50,steps:['コーンをバターで炒める','塩こしょうで味を整える','しっかり冷まして詰める'],tip:'汁気をしっかり飛ばすこと'},
+  {id:'cheese-side',n:'チーズ',d:'黄色の彩りと塩気で満足感UP。',r:['cheese'],o:[],p:['y','e'],col:'yellow',cal:60,steps:['チーズを一口大に切る','または星型・ハート型で型抜き','そのまま詰める'],tip:'型抜きで楽しい見た目に'},
+  {id:'paprika-saute',n:'パプリカのソテー',d:'鮮やかな赤・黄でお弁当映え！',r:['paprika'],o:[],p:['y','e','a'],col:'red',cal:30,steps:['パプリカを細切りにする','オリーブオイルで炒める','塩こしょうで味を整える'],tip:'しっかり炒めて水分を飛ばす'},
+  {id:'horenso-ohitashi',n:'ほうれん草のおひたし',d:'緑の彩りと栄養を両立。冷めても美味しい。',r:['horenso'],o:[],p:['e','a'],col:'green',cal:30,steps:['ほうれん草を塩茹でする','冷水にとって水気を絞る','醤油・だしで味付け'],tip:'水気をしっかり絞ることが重要'},
+  {id:'kinpira',n:'きんぴらごぼう',d:'食物繊維たっぷり。茶色の彩りを担う定番副菜。',r:['gobo'],o:['ninjin'],p:['e','a'],col:'black',cal:60,steps:['ごぼうとにんじんを千切り','ごま油で炒める','醤油・みりん・砂糖で味付け'],tip:'冷めるほど味が染みて美味しくなる'},
+  {id:'kayaku-nimono',n:'かぼちゃの煮物',d:'ほっくり甘いかぼちゃで黄色の彩り。',r:['kayaku'],o:[],p:['y','e','a'],col:'yellow',cal:70,steps:['かぼちゃを一口大に切る','だし・醤油・みりん・砂糖で煮る','中まで柔らかくなったら完成'],tip:'崩れる前に取り出して冷ます'},
+  {id:'kyuri-asazuke',n:'きゅうりの浅漬け',d:'さっぱりとした緑の副菜。食欲を爽やかにリセット。',r:['kyuri'],o:[],p:['a'],col:'green',cal:10,steps:['きゅうりを薄切りにする','塩を振ってしんなりさせる','酢・砂糖・塩で味を整える'],tip:'水気をしっかり絞ること'},
+  {id:'kinoko-saute',n:'きのこのソテー',d:'旨みたっぷりのきのこで大人弁当に深みを。',r:['kinoko'],o:[],p:['a'],col:'black',cal:40,steps:['きのこを食べやすく切る','バターで炒める','醤油・塩こしょうで味付け'],tip:'水分を完全に飛ばしてから詰める'},
+  {id:'potato-salad',n:'ポテトサラダ',d:'子どもも大人も大好き定番副菜。',r:['jagaimo'],o:['ninjin','ham'],p:['y','e','a'],col:'yellow',cal:90,steps:['じゃがいもを茹でてつぶす','にんじん・ハムを加える','マヨネーズ・塩こしょうで味付け'],tip:'完全に冷ましてから詰めること'},
+  {id:'tamagoyaki-sub',n:'だし巻き卵',d:'薄味のだし巻きはサブおかずとしても活躍。',r:['tamago'],o:[],p:['y','e','a'],col:'yellow',cal:90,steps:['卵にだし・薄口醤油を加える','卵焼き器で3回に分けて巻く','冷まして切る'],tip:'薄味にすることでおかずの邪魔をしない'},
+];
+
+const RICE=[
+  {id:'shiro-gohan',n:'白ごはん',d:'お弁当の基本。しっかり冷ましてから詰めよう。',r:['rice'],o:[],p:['y','e','a'],col:'white',cal:200,steps:['ごはんを炊く','しっかり冷ます','弁当箱に詰める'],tip:'温かいまま詰めると傷む原因に'},
+  {id:'furikake-gohan',n:'ふりかけごはん',d:'彩りと風味をプラス。子どもが喜ぶごはん。',r:['rice'],o:['nori'],p:['y','e'],col:'black',cal:210,steps:['ごはんを炊く','冷ましてからふりかけをかける','混ぜて詰める'],tip:'ふりかけは詰める直前にかけると◎'},
+  {id:'onigiri',n:'おにぎり',d:'食べやすくて定番。のりで巻いて彩り良く。',r:['rice'],o:['nori','tuna','salmon'],p:['y','e','a'],col:'white',cal:220,steps:['ごはんを炊いて冷ます','好みの具を入れて握る','のりを巻く'],tip:'のりは食べる直前に巻くとパリパリ'},
+  {id:'soboro-don',n:'二色そぼろごはん',d:'鶏そぼろと卵そぼろで彩り豊かな映えごはん。',r:['rice','chicken','tamago'],o:[],p:['y','e','a'],col:'yellow',cal:320,steps:['鶏そぼろを作る（醤油・みりん・砂糖で炒り煮）','炒り卵を作る','ごはんに二色に並べてのせる'],tip:'二色並べると映え度UP！'},
+  {id:'chicken-rice',n:'チキンライス',d:'ケチャップ味で子どもも大人も大好き。',r:['rice','chicken'],o:['tamanegi'],p:['y','e','a'],col:'red',cal:280,steps:['鶏肉と玉ねぎをバターで炒める','ごはんを加えケチャップで炒める','塩こしょうで味を整える'],tip:'冷まして詰めること'},
+  {id:'maze-gohan',n:'混ぜごはん',d:'具材を混ぜ込んだ食べ応えのある一品。',r:['rice'],o:['ninjin','gobo','kinoko'],p:['e','a'],col:'black',cal:260,steps:['具材をだし・醤油・みりんで煮る','ごはんに混ぜ込む','しっかり冷ます'],tip:'具材は細かく切ると混ぜやすい'},
+  {id:'pasta-salad',n:'パスタサラダ',d:'大人弁当に。冷めても美味しいパスタ系。',r:['pasta'],o:['ham','kyuri','corn'],p:['a'],col:'yellow',cal:280,steps:['パスタをかために茹でる','具材を切る','マヨ・塩こしょうで和える'],tip:'オリーブオイルをからめると乾燥防止に'},
+];
+
+// 残り物アレンジ
+const LEFTOVERS=[
+  {id:'lo-karaage',name:'昨夜の唐揚げ',hint:'冷めても美味しい！レモンを絞るとさっぱりリフレッシュ。カットしてサイズを合わせて。'},
+  {id:'lo-hambagu',name:'昨夜のハンバーグ',hint:'ミニサイズにカットしてそのままIN。ケチャップを少し追加すると美味。'},
+  {id:'lo-nikujaga',name:'昨夜の肉じゃが',hint:'じゃがいもをつぶして肉と混ぜてコロッケ風に。揚げても◎'},
+  {id:'lo-curry',name:'昨夜のカレー',hint:'ごはんと混ぜてカレーピラフに。または小さめのタッパーに入れてスープカレー風に。'},
+  {id:'lo-sakana',name:'昨夜の焼き魚',hint:'身をほぐしてフレークにし、おにぎりの具に。醤油をすこし足すと美味しい。'},
+  {id:'lo-yasai',name:'昨夜の野菜炒め',hint:'そのままサブおかずとしてIN。油が出るのでカップに入れること。'},
+  {id:'lo-nimono',name:'昨夜の煮物',hint:'汁気を切ってそのままサブおかずに。一口サイズにカットして詰めると食べやすい。'},
+];
+
+// 彩りマスター
+const COLOR_DEF={
+  red:{label:'赤',emoji:'🔴',items:['tomato','ninjin','paprika','sausage','wiener','bacon','ham','shrimp','salmon','beef']},
+  green:{label:'緑',emoji:'🟢',items:['brocco','horenso','edamame','kyuri','nori']},
+  yellow:{label:'黄',emoji:'🟡',items:['tamago','corn','cheese','jagaimo','kayaku','pasta']},
+  white:{label:'白',emoji:'⚪',items:['rice','bread','milk','tofu','tamanegi','chicken','pork','tuna','chikuwa']},
+  black:{label:'黒',emoji:'⚫',items:['nori','gobo','kinoko','saba']},
+};
+
+// 詰め方ヒント
+const PACKING_TIPS=[
+  'ごはんは必ず完全に冷ましてから詰めること！温かいと菌が繁殖しやすくなります。',
+  'おかずもしっかり冷ましてから。カップを使うと汁が混ざらず食べやすい。',
+  '大きいおかず→小さいおかずの順で詰めるとスッキリ綺麗に仕上がります。',
+  '隙間はきゅうり・プチトマト・枝豆などで埋めると彩り良く詰まります。',
+  '汁気の多いおかずはシリコンカップに入れるとごはんがべちゃつかない。',
+  '前日夜にできるものは夜作っておくと朝がラクになります。',
+];
+
+const PERSON_LABELS={y:'幼稚園',e:'小学校',a:'大人'};
+const PERSON_CALGOAL={y:300,e:450,a:550};
+
+// ════════════════════
+// アプリ状態
+// ════════════════════
+let activeCat='veg', fridge={}, favBentos=[], lastR=null, lastSnap={};
+let person='y', leftoverMode=false;
+
+const lg=(k,fb)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):fb;}catch{return fb;}};
+const ls=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}};
+
+function init(){
+  fridge=lg('bento-fridge',{});
+  favBentos=lg('bento-favs',[]);
+  renderCatTabs();renderGrid();updateBtn();
+}
+
+// ── PERSON ──
+function setPerson(p){
+  person=p;
+  ['y','e','a'].forEach(x=>{
+    document.getElementById('pb-'+x).classList.toggle('on',x===p);
+  });
+  updateBtn();
+}
+
+// ── LEFTOVER ──
+function toggleLeftover(){
+  leftoverMode=!leftoverMode;
+  const btn=document.getElementById('loBtn');
+  btn.textContent=leftoverMode?'ON':'OFF';
+  btn.classList.toggle('off',!leftoverMode);
+}
+
+// ── TABS ──
+function showTab(t){
+  ['ing','bento','favs'].forEach(x=>{
+    document.getElementById('tab-'+x).style.display=x===t?'block':'none';
+    document.getElementById('tb-'+x).classList.toggle('on',x===t);
+  });
+  if(t==='bento'){renderSum();if(lastR)renderResult(lastR);}
+  if(t==='favs')renderFavs();
+}
+
+// ── FRIDGE ──
+function renderCatTabs(){
+  document.getElementById('catTabs').innerHTML=CATS.map(c=>
+    `<button class="ct ${c.id===activeCat?'on':''}" onclick="switchCat('${c.id}')">${c.name}</button>`
+  ).join('');
+}
+function switchCat(id){activeCat=id;renderCatTabs();renderGrid();}
+function renderGrid(){
+  const cat=CATS.find(c=>c.id===activeCat);
+  document.getElementById('ingGrid').innerHTML=cat.items.map(item=>{
+    const s=fridge[item.id];const qty=s?s.qty:0;
+    return `<div class="ic ${s?'on':''}" onclick="toggleIng('${item.id}')">
+      ${s?'<div class="ichk">✓</div>':''}
+      <div class="ie">${item.e}</div>
+      <div class="in">${item.n}</div>
+      ${s?`<div class="qc" onclick="event.stopPropagation()">
+        <button class="qb" onclick="cq('${item.id}',-0.5)">－</button>
+        <span class="qn">${qty%1===0?qty:qty.toFixed(1)}</span>
+        <button class="qb" onclick="cq('${item.id}',0.5)">＋</button>
+      </div>`:''}
+    </div>`;
+  }).join('');
+}
+function toggleIng(id){
+  const cat=CATS.find(c=>c.id===activeCat);
+  const item=cat.items.find(i=>i.id===id);if(!item)return;
+  if(fridge[id])delete fridge[id];else fridge[id]={item,qty:1};
+  ls('bento-fridge',fridge);renderGrid();updateBtn();
+}
+function cq(id,d){if(!fridge[id])return;fridge[id].qty=Math.max(0.5,Math.round((fridge[id].qty+d)*10)/10);ls('bento-fridge',fridge);renderGrid();}
+function resetFridge(){if(!confirm('リセットしますか？'))return;fridge={};ls('bento-fridge',fridge);renderGrid();updateBtn();}
+function updateBtn(){
+  const n=Object.keys(fridge).length;
+  ['genBtn','genBtn2'].forEach(id=>{const b=document.getElementById(id);if(b)b.disabled=!n;});
+  const h=document.getElementById('genHint');
+  if(h)h.textContent=n?`${n}種類の食材で${PERSON_LABELS[person]}弁当を考えます`:'食材を1つ以上選んでください';
+}
+function renderSum(){
+  const keys=Object.keys(fridge);
+  ['genBtn2'].forEach(id=>{const b=document.getElementById(id);if(b)b.disabled=!keys.length;});
+  const c=document.getElementById('selChips');if(!c)return;
+  c.innerHTML=keys.length?keys.map(k=>{const{item}=fridge[k];return`<span class="sc">${item.e} ${item.n}</span>`;}).join(''):'<span style="font-size:11px;color:var(--muted)">食材タブで選んでください</span>';
+}
+
+// ── MATCH ──
+function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+function matchRecipes(pool,ids,person){
+  return shuffle(pool.filter(r=>
+    r.p.includes(person) && r.r.every(x=>ids.includes(x))
+  ));
+}
+
+// ── GENERATE ──
+function generate(){
+  const ids=Object.keys(fridge);if(!ids.length)return;
+  lastSnap=JSON.parse(JSON.stringify(fridge));
+
+  const mains=matchRecipes(MAIN,ids,person);
+  const sides=matchRecipes(SIDES,ids,person);
+  const rices=matchRecipes(RICE,ids,person);
+
+  const main=mains[0]||null;
+  const side1=sides[0]||null;
+  const side2=sides.find((s,i)=>i>0&&s.id!==side1?.id)||sides[1]||null;
+  const rice=rices[0]||null;
+
+  // 彩りチェック
+  const usedIds=[
+    ...(main?[...main.r,...main.o]:[] ),
+    ...(side1?[...side1.r,...side1.o]:[]),
+    ...(side2?[...side2.r,...side2.o]:[]),
+    ...(rice?[...rice.r,...rice.o]:[]),
+  ];
+  const colors={};
+  Object.entries(COLOR_DEF).forEach(([col,def])=>{
+    colors[col]=usedIds.some(id=>def.items.includes(id));
+  });
+
+  const totalCal=(main?.cal||0)+(side1?.cal||0)+(side2?.cal||0)+(rice?.cal||0);
+  const tip=PACKING_TIPS[Math.floor(Math.random()*PACKING_TIPS.length)];
+
+  lastR={main,side1,side2,rice,colors,totalCal,tip,ids};
+  showTab('bento');
+  renderResult(lastR);
+}
+
+function renderResult(d){
+  const ra=document.getElementById('resultArea');if(!ra)return;
+  const {main,side1,side2,rice,colors,totalCal,tip} = d;
+
+  const isFav=favBentos.some(f=>f.mainName===(main?.n||''));
+
+  const renderItem=(item,typeLbl,typeCls,typeColor)=>{
+    if(!item)return`<div class="bento-section"><div class="bs-type"><span class="bs-type-badge" style="background:${typeColor}">${typeLbl}</span></div><div class="bs-name" style="color:var(--muted)">なし（食材を追加してみてください）</div></div>`;
+    const steps=(item.steps||[]).map((s,j)=>`<div class="step"><div class="snum">${j+1}</div><div class="stxt">${s}</div></div>`).join('');
+    const rid=`rs-${item.id}-${Math.random().toString(36).slice(2,6)}`;
+    return `<div class="bento-section">
+      <div class="bs-type"><span class="bs-type-badge" style="background:${typeColor}">${typeLbl}</span></div>
+      <div class="bs-name">${item.n}</div>
+      <div class="bs-desc">${item.d}</div>
+      ${steps?`<button class="recipe-toggle" id="rtb-${rid}" onclick="togR('${rid}')">📋 作り方</button><div class="rsteps" id="${rid}">${steps}${item.tip?`<div style="background:var(--gl);border-radius:6px;padding:5px 8px;margin-top:4px;font-size:11px;color:var(--gd)">💡 ${item.tip}</div>`:''}</div>`:''}
+    </div>`;
+  };
+
+  // 彩りチェック
+  const colorOk=Object.values(colors).filter(Boolean).length;
+  const colorHtml=Object.entries(COLOR_DEF).map(([col,def])=>`
+    <div class="cc-item">
+      <div class="cc-circle ${colors[col]?'ok':'ng'}">${def.emoji}</div>
+      <div class="cc-label">${def.label}</div>
+    </div>`).join('');
+
+  ra.innerHTML=`
+    <div class="res-ttl">🍱 ${PERSON_LABELS[person]}のお弁当</div>
+    <div class="bento-box">
+      <div class="bento-box-hdr">
+        <span class="bento-box-ttl">本日のお弁当</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="bento-cal">🔥 約${totalCal}kcal</span>
+          <button class="fav-btn" id="favBentoBtn" onclick="toggleFav()">${isFav?'❤️':'🤍'}</button>
+        </div>
+      </div>
+      <div class="bento-sections">
+        ${renderItem(main,'メイン','m','var(--orange)')}
+        ${renderItem(rice,'ごはん','r','var(--yellow)')}
+        ${renderItem(side1,'サブ①','s','var(--green)')}
+        ${renderItem(side2,'サブ②','s','var(--green)')}
+      </div>
+    </div>
+
+    <div class="color-check">
+      <div class="cc-ttl">🌈 彩りチェック <span style="font-size:12px;color:var(--muted);font-weight:400">${colorOk}/5色</span></div>
+      <div class="cc-bars">${colorHtml}</div>
+      ${colorOk>=4
+        ?`<div class="cc-ok-msg">✨ 彩りバッチリ！見た目も美味しいお弁当です</div>`
+        :`<div class="cc-ng-msg">🎨 ${Object.entries(colors).filter(([,v])=>!v).map(([k])=>COLOR_DEF[k].label).join('・')}の食材を足すと更に彩り豊かに！</div>`}
+    </div>
+
+    <div class="tip-card">
+      <div class="tip-ttl">🍱 詰め方のコツ</div>
+      <div class="tip-txt">${tip}</div>
+    </div>
+
+    ${leftoverMode?`<div class="tip-card" style="background:var(--ol);border-color:rgba(212,105,30,0.2);">
+      <div class="tip-ttl" style="color:var(--orange)">♻️ 残り物アレンジアイデア</div>
+      ${LEFTOVERS.map(lo=>`<div style="margin-bottom:6px;"><b style="font-size:12px;">${lo.name}</b><br><span style="font-size:11px;color:#555;">${lo.hint}</span></div>`).join('')}
+    </div>`:''}
+
+    <button class="deduct-btn" onclick="deduct()">🗑 使った食材を冷蔵庫から差し引く</button>
+    <button class="retry-btn" onclick="generate()">🔀 違うお弁当を提案してもらう</button>
+  `;
+}
+
+function togR(id){
+  const el=document.getElementById(id);const btn=document.getElementById('rtb-'+id);
+  if(!el||!btn)return;
+  el.classList.toggle('open');
+  btn.textContent=el.classList.contains('open')?'▲ 閉じる':'📋 作り方';
+}
+
+function deduct(){
+  if(!confirm('使った食材を差し引きますか？'))return;
+  Object.keys(lastSnap).forEach(id=>{
+    if(fridge[id]){fridge[id].qty=Math.max(0,Math.round((fridge[id].qty-lastSnap[id].qty)*10)/10);if(fridge[id].qty<=0)delete fridge[id];}
+  });
+  ls('bento-fridge',fridge);alert('✅ 完了！');
+}
+
+function toggleFav(){
+  if(!lastR?.main)return;
+  const key=lastR.main.n;
+  const idx=favBentos.findIndex(f=>f.mainName===key);
+  if(idx>=0)favBentos.splice(idx,1);
+  else favBentos.push({id:Date.now(),mainName:key,sideName1:lastR.side1?.n||'',sideName2:lastR.side2?.n||'',riceName:lastR.rice?.n||'',person:PERSON_LABELS[person],cal:lastR.totalCal});
+  ls('bento-favs',favBentos);
+  const btn=document.getElementById('favBentoBtn');
+  if(btn)btn.textContent=favBentos.some(f=>f.mainName===key)?'❤️':'🤍';
+}
+
+function renderFavs(){
+  const w=document.getElementById('favsWrap');
+  if(!favBentos.length){
+    w.innerHTML=`<div class="empty"><div class="ei">🤍</div><p>お弁当の🤍を押すと<br>ここに保存されます</p></div>`;
+    return;
+  }
+  w.innerHTML=`<div class="fttl">❤️ お気に入りのお弁当</div>`+
+    favBentos.map(f=>`<div class="fcard">
+      <div class="fi">
+        <div class="fn">🍱 ${f.mainName}</div>
+        <div class="fsub">${f.person}弁当 ／ 🔥 約${f.cal}kcal</div>
+        <div class="fdsc">${[f.riceName,f.sideName1,f.sideName2].filter(Boolean).join(' ／ ')}</div>
+      </div>
+      <button class="xbtn" onclick="delFav(${f.id})">✕</button>
+    </div>`).join('');
+}
+function delFav(id){favBentos=favBentos.filter(f=>f.id!==id);ls('bento-favs',favBentos);renderFavs();}
+
+init();
+</script>
+</body>
+</html>
